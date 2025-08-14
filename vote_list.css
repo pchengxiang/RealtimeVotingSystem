@@ -1,0 +1,92 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background-color: #f9f9f9;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+    background-color: #4CAF50;
+    color: white;
+}
+
+.title {
+    font-size: 24px;
+}
+
+.form-btn {
+    padding: 8px 16px;
+    background-color: #ff5722;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 16px;
+    margin-left: 10px;
+    /* 與標題或其他按鈕間距 */
+}
+
+.form-btn:hover {
+    background-color: #e64a19;
+}
+
+.home-btn {
+    text-decoration: none;
+    color: white;
+    background-color: #3e8e41;
+    padding: 8px 16px;
+    border-radius: 5px;
+}
+
+.home-btn:hover {
+    background-color: #367a39;
+}
+
+.vote-list {
+    padding: 30px;
+}
+
+.vote-topic {
+    margin-bottom: 50px;
+}
+
+.topic-title {
+    font-size: 22px;
+    margin-bottom: 15px;
+}
+
+.vote-items {
+    display: flex;
+    justify-content: flex-start;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.vote-card {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    width: 200px;
+    text-align: center;
+    padding: 15px;
+}
+
+.vote-img {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
+.vote-name {
+    font-size: 18px;
+    margin: 5px 0;
+}
+
+.vote-count {
+    font-size: 16px;
+    color: #555;
+}

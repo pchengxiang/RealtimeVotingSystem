@@ -14,8 +14,12 @@ datasource db {
 }
 
 model Vote {
-  id      Int      @id @default(autoincrement()) // 自動遞增 ID
-  option  String // 投票選項
-  ip      String   @unique // 限制同一 IP 只能投一次
-  created DateTime @default(now()) // 投票時間
+  id          Int      @id @default(autoincrement()) // 自動遞增 ID
+  option      String // 投票選項
+  ip          String
+  topic_id    String
+  created     DateTime @default(now()) // 投票時間
+  voteTopicId Int?
+
+  @@unique([ip, topic_id])
 }

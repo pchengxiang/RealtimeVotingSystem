@@ -7,10 +7,15 @@ body {
 }
 
 header {
+    display: flex;
+    /* 水平排列 */
+    justify-content: space-between;
+    /* 左右分散 */
+    align-items: center;
+    /* 垂直置中 */
     background: #4e73df;
     color: #fff;
     padding: 1rem 0;
-    text-align: center;
     font-size: 1.8rem;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }

@@ -9,20 +9,21 @@
 </head>
 
 <body>
-    <header>即時投票系統</header>
+    <header>
+        即時投票系統
+        <a href="vote_list.html" class="list-btn">投票列表</a>
+    </header>
 
     <main>
         <button id="reset-vote">重新投票</button>
         <div id="vote-options">
             <!-- 範例選項，之後用 JS 動態產生 -->
             <div class="vote-card">
-                <span class="vote-image">☕</span>
-                <p>咖啡</p>
+                <p id="vote1-text">咖啡</p>
                 <button id="vote1">投票</button>
             </div>
             <div class="vote-card">
-                <span class="vote-image">🍵</span>
-                <p>茶</p>
+                <p id="vote2-text">茶</p>
                 <button id="vote2">投票</button>
             </div>
         </div>
@@ -36,12 +37,18 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         const apiBase = "http://localhost:8000";
+        // 取得 query string
+        const params = new URLSearchParams(window.location.search);
+        const topicId = params.get("topic_id");
+        const vote1 = params.get("vote1");
+        const vote2 = params.get("vote2");
+
         // 這裡之後你可以用 API 動態更新數據
         const ctx = document.getElementById('vote-chart').getContext('2d');
         const chart = new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: ['咖啡', '茶'],
+                labels: [vote1 ? vote1 : "咖啡", vote2 ? vote2 : '茶'],
                 datasets: [{
                     label: '票數',
                     data: [0, 0],
@@ -63,6 +70,14 @@
             document.getElementById("reset-vote").display = 'none';
             let btn = document.getElementById("vote1")
             let btn2 = document.getElementById("vote2")
+
+            // 更新首頁投票區
+            if (topicId) {
+                document.getElementById("vote1-text").textContent = vote1;
+                document.getElementById("vote2-text").textContent = vote2;
+                document.getElementById("vote1-text").dataset.topicId = topicId;
+                document.getElementById("vote2-text").dataset.topicId = topicId;
+            }
 
             if (await hasVote()) {
                 document.getElementById("reset-vote").display = 'block';
@@ -96,35 +111,35 @@
         }
 
         async function hasVote() {
-            const res = await fetch("http://localhost:8000/has_vote");
+            const res = await fetch("http://localhost:8000/has_vote/" + topicId);
             return await res.json();
         }
 
 
         async function getResults() {
-            const res = await fetch(`${apiBase}/results`);
+            const res = await fetch(`${apiBase}/results/${topicId}?vote1=${encodeURIComponent(vote1)}&vote2=${encodeURIComponent(vote2)}`);
             return res.json();
         }
 
-        async function vote(option) {
-            await fetch(`${apiBase}/vote`, {
+        async function vote(option, topic_id) {
+            let res = await fetch(`${apiBase}/vote`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ option })
+                body: JSON.stringify({ option, topic_id })
             });
+            console.log(await res.json())
             updateChart();
         }
 
         async function updateChart() {
             const data = await getResults();
-            console.log(data)
-            chart.data.datasets[0].data = [data.coffee, data.tea];
+            chart.data.datasets[0].data = [data[vote1], data[vote2]];
             chart.update();
         }
 
         async function resetVote() {
             if (hasVote) {
-                fetch("http://localhost:8000/vote", {
+                fetch("http://localhost:8000/vote/" + topicId, {
                     method: "DELETE"
                 });
                 init();
@@ -132,11 +147,11 @@
         }
 
         document.getElementById("vote1").addEventListener("click", async () => {
-            vote("coffee");
+            vote(vote1 ?? "咖啡", topicId);
         })
 
         document.getElementById("vote2").addEventListener("click", async () => {
-            vote("tea");
+            vote(vote2 ?? "茶", topicId);
         })
 
         document.getElementById("reset-vote").addEventListener("click", async () => {
