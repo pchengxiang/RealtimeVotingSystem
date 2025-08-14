@@ -1,0 +1,8 @@
+node_modules
+# Keep environment variables out of version control
+.env
+venv
+__pycache__
+activate.bat
+prisma.bat
+start.bat

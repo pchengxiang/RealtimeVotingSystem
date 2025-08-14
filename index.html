@@ -5,130 +5,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>即時投票系統</title>
-    <style>
-        /* 全局樣式 */
-        body {
-            font-family: "Segoe UI", Arial, sans-serif;
-            margin: 0;
-            background: linear-gradient(135deg, #ece9e6, #ffffff);
-            color: #333;
-        }
-
-        header {
-            background: #4e73df;
-            color: #fff;
-            padding: 1rem 0;
-            text-align: center;
-            font-size: 1.8rem;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        /* 投票選項容器 */
-        #vote-options {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 2rem;
-            flex-wrap: wrap;
-            padding: 2rem;
-            max-width: 1200px;
-            margin: auto;
-        }
-
-        /* 單一投票卡片 */
-        .vote-card {
-            background: #fff;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            width: 300px;
-            transition: transform 0.2s, box-shadow 0.2s;
-            cursor: pointer;
-            text-align: center;
-        }
-
-        .vote-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15);
-        }
-
-        .vote-card img {
-            width: 100%;
-            height: 220px;
-            object-fit: cover;
-        }
-
-        .vote-card p {
-            margin: 0;
-            padding: 1rem;
-            font-size: 1.5rem;
-            font-weight: bold;
-            background: #f8f9fc;
-        }
-
-        /* 按鈕 */
-        .vote-card button {
-            width: 100%;
-            padding: 1rem;
-            border: none;
-            background: #1cc88a;
-            color: white;
-            font-size: 1.2rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .vote-card button:hover {
-            background: #17a673;
-        }
-
-        .vote-image {
-            font-size: 64px;
-        }
-
-        #chart-section {
-            background: #fff;
-            margin: 2rem auto;
-            padding: 2rem;
-            border-radius: 15px;
-            max-width: 600px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            /* 讓內部元素置中 */
-        }
-
-        #chart-section h2 {
-            margin-bottom: 1rem;
-            color: #4e73df;
-        }
-
-        #chart-section canvas {
-            display: block;
-            max-width: 500px;
-            /* 限制圖表最大寬度 */
-            height: auto;
-            margin: 0 auto;
-            /* 水平置中 */
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
     <header>即時投票系統</header>
 
     <main>
+        <button id="reset-vote">重新投票</button>
         <div id="vote-options">
             <!-- 範例選項，之後用 JS 動態產生 -->
             <div class="vote-card">
                 <span class="vote-image">☕</span>
                 <p>咖啡</p>
-                <button>投票</button>
+                <button id="vote1">投票</button>
             </div>
             <div class="vote-card">
                 <span class="vote-image">🍵</span>
                 <p>茶</p>
-                <button>投票</button>
+                <button id="vote2">投票</button>
             </div>
         </div>
         <section id="chart-section">
@@ -140,6 +35,7 @@
     <!-- 引入 Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
+        const apiBase = "http://localhost:8000";
         // 這裡之後你可以用 API 動態更新數據
         const ctx = document.getElementById('vote-chart').getContext('2d');
         const chart = new Chart(ctx, {
@@ -159,6 +55,95 @@
                 }
             }
         });
+
+        window.onload = init
+
+
+        async function init() {
+            document.getElementById("reset-vote").display = 'none';
+            let btn = document.getElementById("vote1")
+            let btn2 = document.getElementById("vote2")
+
+            if (await hasVote()) {
+                document.getElementById("reset-vote").display = 'block';
+
+                // 禁用按鈕
+                btn.disabled = true;
+
+                // 可同時改文字
+                btn.innerText = "已投票";
+
+                // 禁用按鈕
+                btn2.disabled = true;
+
+                // 可同時改文字
+                btn2.innerText = "已投票";
+            } else {
+                document.getElementById("reset-vote").display = 'none';
+
+                // 禁用按鈕
+                btn.disabled = false;
+
+                // 可同時改文字
+                btn.innerText = "投票";
+
+                // 禁用按鈕
+                btn2.disabled = false;
+
+                // 可同時改文字
+                btn2.innerText = "投票";
+            }
+        }
+
+        async function hasVote() {
+            const res = await fetch("http://localhost:8000/has_vote");
+            return await res.json();
+        }
+
+
+        async function getResults() {
+            const res = await fetch(`${apiBase}/results`);
+            return res.json();
+        }
+
+        async function vote(option) {
+            await fetch(`${apiBase}/vote`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ option })
+            });
+            updateChart();
+        }
+
+        async function updateChart() {
+            const data = await getResults();
+            console.log(data)
+            chart.data.datasets[0].data = [data.coffee, data.tea];
+            chart.update();
+        }
+
+        async function resetVote() {
+            if (hasVote) {
+                fetch("http://localhost:8000/vote", {
+                    method: "DELETE"
+                });
+                init();
+            }
+        }
+
+        document.getElementById("vote1").addEventListener("click", async () => {
+            vote("coffee");
+        })
+
+        document.getElementById("vote2").addEventListener("click", async () => {
+            vote("tea");
+        })
+
+        document.getElementById("reset-vote").addEventListener("click", async () => {
+            resetVote();
+        })
+        updateChart();
+        setInterval(updateChart, 2000);
     </script>
 </body>
 
